@@ -118,7 +118,7 @@ public class FeedDetailActivity extends Activity {
     case R.id.menu_unsubscribe_feed:
       // fire "are you sure" dialog
       new AlertDialog.Builder(this)
-          .setIcon(android.R.drawable.ic_dialog_alert)
+          .setIconAttribute(android.R.attr.alertDialogIcon)
           .setTitle(R.string.delete_feed_title)
           .setMessage(R.string.delete_feed_message)
           .setPositiveButton(R.string.delete_feed_confirm,
