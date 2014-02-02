@@ -99,6 +99,35 @@
                 <data android:mimeType="application/atom+xml" />
                 <data android:mimeType="application/xml" />
             </intent-filter>
+            <intent-filter>
+                <action
+                    android:name="android.intent.action.VIEW"
+                    android:label="@string/intent_add_feed" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.ALTERNATIVE" />
+                <category android:name="android.intent.category.SELECTED_ALTERNATIVE" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="itpc" />
+                <data android:mimeType="text/xml" />
+                <data android:mimeType="application/rss+xml" />
+                <data android:mimeType="application/atom+xml" />
+                <data android:mimeType="application/xml" />
+            </intent-filter>
+            <intent-filter>
+                <action
+                    android:name="android.intent.action.VIEW"
+                    android:label="@string/intent_add_feed" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.ALTERNATIVE" />
+                <category android:name="android.intent.category.SELECTED_ALTERNATIVE" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="itmss" />
+                <data android:host="itunes.apple.com" />
+            </intent-filter>
         </activity>
 
         <service
