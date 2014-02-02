@@ -88,6 +88,7 @@ public class SearchFeedActivity extends Activity implements
     public boolean onQueryTextSubmit(String query) {
       String input = searchView.getQuery().toString();
       if (!"".equals(input)) {
+        searchView.clearFocus(); //Hide Keyboard
         if (input.startsWith("http://") || input.startsWith("https://")
             || input.startsWith("www.")) {
           addFeed(input);
