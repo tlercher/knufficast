@@ -203,6 +203,7 @@ public class SearchFeedActivity extends Activity implements
       searchView.setQuery(uri.toString(), true);
     }
 
+    searchView.setQueryHint(getString(R.string.search_feed_hint));
     searchView.setOnQueryTextListener(queryListener);
     searchView.setIconifiedByDefault(false);
     searchView.requestFocus();

@@ -5,7 +5,7 @@
         android:actionViewClass="android.widget.SearchView"
         android:icon="@android:drawable/ic_menu_search"
         android:showAsAction="always"
-        android:title="search"/>
+        android:title="@string/search_feed_hint"/>
     <item
         android:id="@+id/menu_settings"
         android:orderInCategory="100"
