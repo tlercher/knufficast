@@ -44,6 +44,7 @@ import de.knufficast.events.EventBus;
 import de.knufficast.events.Listener;
 import de.knufficast.events.NewImageEvent;
 import de.knufficast.logic.AddFeedTask;
+import de.knufficast.search.ITunesLookup;
 import de.knufficast.search.ITunesSearch;
 import de.knufficast.search.PodcastSearch;
 import de.knufficast.search.PodcastSearch.Result;
@@ -91,6 +92,10 @@ public class SearchFeedActivity extends Activity implements
         if (input.startsWith("http://") || input.startsWith("https://")
             || input.startsWith("www.")) {
           addFeed(input);
+        } else if(input.startsWith("itpc://")) {
+          addFeed(input.replace("itpc://", "http://"));
+        } else if(input.contains("itunes.apple.com") && input.contains("/podcast/")) {
+          addITunesFeed(input);
         } else {
           searchProgress.setVisibility(View.VISIBLE);
           podcastSearch.search(input, searchCallback);
@@ -151,6 +156,39 @@ public class SearchFeedActivity extends Activity implements
 
     eventBus = App.get().getEventBus();
     eventBus.addListener(NewImageEvent.class, newImageListener);
+  }
+
+  private void addITunesFeed(String url) {
+    Uri uri = Uri.parse(url);
+
+    String idSegment = uri.getLastPathSegment();
+    if(idSegment != null && idSegment.startsWith("id")) {
+      PodcastSearch itLookup = new ITunesLookup();
+
+      itLookup.search(idSegment.substring(2), new BooleanCallback<List<Result>, String>() {
+        @Override
+        public void success(final List<Result> results) {
+          runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              addFeed(results.get(0).getFeedUrl());
+            }
+          });
+        }
+
+        @Override
+        public void fail(String error) {
+          searchResults.clear();
+          runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              searchProgress.setVisibility(View.GONE);
+              searchResultsAdapter.notifyDataSetChanged();
+            }
+          });
+        }
+      });
+    }
   }
 
   private void addFeed(String url) {

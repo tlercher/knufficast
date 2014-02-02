@@ -35,7 +35,7 @@ import de.knufficast.util.HttpUtil;
  * 
  */
 public class ITunesSearch implements PodcastSearch {
-  private static final String SEARCH_URL = "http://itunes.apple.com/search?media=podcast&entity=podcast&term=%s";
+  private static final String SEARCH_URL = "https://itunes.apple.com/search?media=podcast&entity=podcast&term=%s";
   private static final String ERROR_CONNECTION = "No connection";
   private static final String ERROR_JSON = "JSON Error";
   private final HttpUtil httpUtil = new HttpUtil();
@@ -99,7 +99,7 @@ public class ITunesSearch implements PodcastSearch {
       }
     });
   }
-  
+
   private void runOnThread(Runnable runnable) {
     Thread thread = new Thread(runnable);
     thread.start();
