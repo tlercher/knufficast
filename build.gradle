@@ -14,3 +14,8 @@ allprojects {
         mavenCentral()
     }
 }
+
+//Force the requirement of android-tools:0.8.+ (otherwise the gradle-plugin crashes)
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.10'
+}
