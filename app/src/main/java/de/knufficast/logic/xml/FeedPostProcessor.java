@@ -76,7 +76,7 @@ public class FeedPostProcessor extends XmlParser {
       }
       stringBuilder.append(">");
     } else if ("".equals(episode.getImgUrl()) && "img".equals(tag)) {
-      if (attributes.containsKey("src")) {
+      if (attributes.containsKey("src") && !(attributes.get("width").equals("1") && attributes.get("height").equals("1"))) {
         episode.setImgUrl(attributes.get("src"));
       }
     }

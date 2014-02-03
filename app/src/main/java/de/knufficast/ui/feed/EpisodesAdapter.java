@@ -67,7 +67,11 @@ public class EpisodesAdapter extends ArrayAdapter<DBEpisode> {
     TextView textView = (TextView) row.findViewById(R.id.episode_list_title);
     textView.setText(episode.getTitle());
     ImageView imageView = (ImageView) row.findViewById(R.id.episode_list_icon);
-    imageView.setImageDrawable(imageCache.getResource(episode.getImgUrl()));
+    if(!"".equals(episode.getImgUrl())) {
+      imageView.setImageDrawable(imageCache.getResource(episode.getImgUrl()));
+    } else {
+      imageView.setImageDrawable(imageCache.getResource(episode.getFeed().getImgUrl()));
+    }
     return row;
   }
 }
