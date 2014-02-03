@@ -15,6 +15,10 @@
  ******************************************************************************/
 package de.knufficast.ui.search;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,16 +38,27 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.SearchView.OnQueryTextListener;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
+import org.xmlpull.v1.XmlPullParserException;
+
 import de.knufficast.App;
 import de.knufficast.R;
 import de.knufficast.events.EventBus;
 import de.knufficast.events.Listener;
 import de.knufficast.events.NewImageEvent;
 import de.knufficast.logic.AddFeedTask;
+import de.knufficast.logic.FeedDownloader;
+import de.knufficast.logic.GetFeedTask;
+import de.knufficast.logic.xml.XMLFeed;
 import de.knufficast.search.ITunesLookup;
 import de.knufficast.search.ITunesSearch;
 import de.knufficast.search.PodcastSearch;
@@ -85,26 +100,27 @@ public class SearchFeedActivity extends Activity implements
       return false;
     }
 
+
     @Override
-    public boolean onQueryTextSubmit(String query) {
-      String input = searchView.getQuery().toString();
-      if (!"".equals(input)) {
-        searchView.clearFocus(); //Hide Keyboard
-        if (input.startsWith("http://") || input.startsWith("https://")
-            || input.startsWith("www.")) {
-          addFeed(input);
-        } else if(input.startsWith("itpc://")) {
-          addFeed(input.replace("itpc://", "http://"));
-        } else if(input.contains("itunes.apple.com") && input.contains("/podcast/")) {
-          addITunesFeed(input);
-        } else {
-          searchProgress.setVisibility(View.VISIBLE);
-          podcastSearch.search(input, searchCallback);
-        }
+  public boolean onQueryTextSubmit(String query) {
+    String input = query;
+    if (!"".equals(input)) {
+      searchView.clearFocus(); //Hide Keyboard
+      if (input.startsWith("http://") || input.startsWith("https://")
+              || input.startsWith("www.")) {
+        addExternalFeed(input);
+      } else if (input.startsWith("itpc://")) {
+        addExternalFeed(input.replace("itpc://", "http://"));
+      } else if (input.contains("itunes.apple.com") && input.contains("/podcast/")) {
+        addITunesFeed(input);
+      } else {
+        searchProgress.setVisibility(View.VISIBLE);
+        podcastSearch.search(input, searchCallback);
       }
-      return true;
     }
-  };
+    return true;
+  }
+};
 
   private SearchResultsAdapter searchResultsAdapter;
   private EventBus eventBus;
@@ -159,6 +175,69 @@ public class SearchFeedActivity extends Activity implements
     eventBus.addListener(NewImageEvent.class, newImageListener);
   }
 
+
+  private void addFeed(String url) {
+    addFeedTask = new AddFeedTask(this);
+    addFeedTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
+  }
+
+  private void addExternalFeed(String url) {
+    String message = getString(R.string.add_feed_progress_message);
+    enableProgressDialog(null, message);
+
+    GetFeedTask feedTask = new GetFeedTask( new GetFeedTask.ResultCallback() {
+      @Override
+      public void onFeedFound(final XMLFeed feed) {
+        disableProgressDialog();
+        final LinearLayout subscribeView = (LinearLayout) getLayoutInflater()
+                .inflate(R.layout.dialog_feed_add, null);
+
+        ImageView imageView = (ImageView) subscribeView.findViewById(R.id.dialog_feed_add_cover);
+        imageView.setImageDrawable(App.get().getImageCache().getResource(feed.getImgUrl()));
+
+        TextView textView = (TextView) subscribeView.findViewById(R.id.dialog_feed_add_name);
+        textView.setText(feed.getTitle());
+
+        EditText descriptionText = (EditText) subscribeView.findViewById(R.id.dialog_feed_add_description);
+        descriptionText.setText(feed.getDescription());
+
+        runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            AlertDialog alertDialog = new AlertDialog.Builder(SearchFeedActivity.this)
+                    .setView(subscribeView)
+                    .setIcon(R.drawable.ic_launcher)
+                    .setPositiveButton(R.string.add_feed_alert_btn_positive, new DialogInterface.OnClickListener() {
+                      @Override
+                      public void onClick(DialogInterface dialog, int which) {
+                        addFeed(feed.getDataUrl());
+                      }
+                    })
+                    .setNeutralButton(R.string.add_feed_alert_btn_neutral, new DialogInterface.OnClickListener() {
+                      @Override
+                      public void onClick(DialogInterface dialog, int which) {
+                        onBackPressed();
+                      }
+                    })
+                    .setCancelable(false)
+                    .create();
+
+            alertDialog.show();
+          }
+        });
+      }
+
+      @Override
+      public void onError(String message) {
+        disableProgressDialog();
+        new AlertDialog.Builder(SearchFeedActivity.this).setTitle(R.string.add_feed_failed)
+                .setMessage(message).show();
+      }
+    });
+
+    feedTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
+  }
+
   private void addITunesFeed(String url) {
     Uri uri = Uri.parse(url);
 
@@ -172,7 +251,7 @@ public class SearchFeedActivity extends Activity implements
           runOnUiThread(new Runnable() {
             @Override
             public void run() {
-              addFeed(results.get(0).getFeedUrl());
+              addExternalFeed(results.get(0).getFeedUrl());
             }
           });
         }
@@ -190,11 +269,6 @@ public class SearchFeedActivity extends Activity implements
         }
       });
     }
-  }
-
-  private void addFeed(String url) {
-    addFeedTask = new AddFeedTask(this);
-    addFeedTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
   }
 
   @Override
@@ -236,14 +310,16 @@ public class SearchFeedActivity extends Activity implements
     searchView = (SearchView) menu.findItem(R.id.add_feed_search)
         .getActionView();
 
-    Uri uri = getIntent().getData();
-    if (uri != null) {
-      searchView.setQuery(uri.toString(), true);
-    }
-
     searchView.setQueryHint(getString(R.string.search_feed_hint));
     searchView.setOnQueryTextListener(queryListener);
     searchView.setIconifiedByDefault(false);
+
+    Uri uri = getIntent().getData();
+    if (uri != null) {
+      queryListener.onQueryTextSubmit(uri.toString());
+      return true;
+    }
+
     searchView.requestFocus();
     return true;
   }
@@ -265,13 +341,9 @@ public class SearchFeedActivity extends Activity implements
 
   @Override
   public void onStartAddingFeed() {
-    enableProgressDialog();
-  }
-
-  private void enableProgressDialog() {
     String title = getString(R.string.add_feed_progress_title);
     String message = getString(R.string.add_feed_progress_message);
-    progressDialog = ProgressDialog.show(this, title, message);
+    enableProgressDialog(title, message);
     progressDialog.setCancelable(true);
     progressDialog.setOnCancelListener(new OnCancelListener() {
       @Override
@@ -279,6 +351,11 @@ public class SearchFeedActivity extends Activity implements
         addFeedTask.cancel(true);
       }
     });
+  }
+
+  private void enableProgressDialog(String title, String message) {
+
+    progressDialog = ProgressDialog.show(this, title, message);
     // lock orientation
     setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
   }

@@ -9,6 +9,11 @@
     <string name="add_feed_progress_title">Subscribing to the feed&#8230;</string>
     <string name="add_feed_progress_message">Please stand by while I go and fetch the feed data.</string>
     <string name="add_feed_failed">Adding the feed failed.</string>
+    <string name="add_feed_alert_title">Subscribe Feed?</string>
+    <string name="add_feed_alert_btn_positive">Subscribe</string>
+    <string name="add_feed_alert_btn_neutral">Cancel</string>
+    <string name="add_feed_alert_input_name">Podcast Name</string>
+    <string name="add_feed_alert_input_desc">Podcast Description</string>
     <string name="title_activity_feed_detail">Feed details</string>
     <string name="title_activity_episode_detail">Episode details</string>
     <string name="title_activity_settings">Settings</string>

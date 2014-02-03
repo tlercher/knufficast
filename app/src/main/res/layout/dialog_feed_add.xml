@@ -1,0 +1,46 @@
+<LinearLayout
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                 android:layout_width="fill_parent"
+                 android:layout_height="wrap_content"
+                 android:id="@+id/dialog_feed_add_frame">
+
+        <ImageView
+            android:id="@+id/dialog_feed_add_cover"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center_horizontal"
+            android:scaleType="centerInside"
+            android:adjustViewBounds="true"
+            android:maxHeight="256dp"
+            android:maxWidth="256dp" />
+
+        <TextView
+            android:id="@+id/dialog_feed_add_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="0dip"
+            android:layout_gravity="center_horizontal|bottom"
+
+            android:padding="12dip"
+            android:background="#DD000000"
+            android:textColor="#ffffffff"
+
+            android:text="@string/add_feed_alert_input_name" />
+
+    </FrameLayout>
+
+    <EditText
+        android:id="@+id/dialog_feed_add_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:focusable="false"
+        android:enabled="false"
+        android:ems="10"
+        android:hint="@string/add_feed_alert_input_desc"/>
+</LinearLayout>
